@@ -9,12 +9,12 @@ To illustrate the output, Figure 1 shows a sample frame of the camera feed with 
 Figure 2 displays the corresponding binarized mask used during the segmentation process.
 
 <p align="center">
-  <img src="RedBallTrackSample.png" width="500"><br>
+  <img src="RedballTrackSample.png" width="500"><br>
   <em>Figure 1. Camera output showing the detected red ball and annotated bounding circle.</em>
 </p>
 
 <p align="center">
-  <img src="RedBallTrackSample1.png" width="500"><br>
+  <img src="RedballTrackSample1.png" width="500"><br>
   <em>Figure 2. Binary mask representation highlighting the segmented red regions.</em>
 </p>
 
