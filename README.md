@@ -43,7 +43,7 @@ The system initializes the default camera and sets the resolution to 640×480. T
 ### 3. HSV Color Space and Dual-Range Segmentation
 <p align="center">
   <img src="hsv_cylinder.webp" width="300">
-  <img src="HSVCircle.png" width="300"><br>
+  <img src="HSVunwrapped.png" width="300"><br>
   <em>Figure 5. HSV color representation: cylindrical model (left) and hue circle (right).</em>
 </p>
 
