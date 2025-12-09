@@ -79,14 +79,26 @@ The masks are combined using a bitwise OR operation and adjusted via a calibrati
   <em>Figure 8. Erosion and dilation operations for mask refinement.</em>
 </p>
 
-After segmentation, the binary mask may contain noise. A 5×5 erosion removes small artifacts, followed by dilation to restore object size. This opening operation preserves legitimate structure while eliminating fragmented noise. All kernel parameters remain adjustable.
+Morphological filtering is applied to reduce noise and improve the stability of red object extraction. The effects of these operations can be seen clearly in the following test captures taken during live calibration with the red ball:
+
+<p align="center">
+  <img src="before_erodedilate.png" width="500"><br>
+  <em>Figure 9. Raw binary mask before applying erosion and dilation. Small noise clusters and irregular edges are visible.</em>
+</p>
+
+<p align="center">
+  <img src="after_erodedilate.png" width="500"><br>
+  <em>Figure 10. Binary mask after applying erosion and dilation. Noise is removed and the ball region becomes more uniform and structurally coherent.</em>
+</p>
+
+These examples demonstrate the practical impact of morphological operations. Erosion removes isolated bright pixels and breaks apart thin connections, while dilation reconstructs the main object, ensuring that the red ball remains intact and easily detectable. Kernel size and iteration parameters can be tuned interactively through the calibration panel to suit different environments.
 
 ---
 
 ### 5. Contour Analysis and Object Selection
 <p align="center">
   <img src="contouring.png" width="500"><br>
-  <em>Figure 9. Contour detection and largest-region selection.</em>
+  <em>Figure 11. Contour detection and largest-region selection.</em>
 </p>
 
 Contours are extracted from the refined mask. A minimum area threshold of 300 pixels removes insignificant detections. The largest contour is selected as the primary target, assuming the red ball appears as the largest contiguous region. A minimum enclosing circle provides position and radius estimates.
