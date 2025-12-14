@@ -28,12 +28,25 @@ Figure 1 illustrates a sample camera frame with the tracked red ball highlighted
 
 A serial connection is established with an Arduino microcontroller at 9600 baud. This rate balances throughput and stability for future real-time control. Robust error handling ensures the program halts safely if no Arduino is detected, preventing downstream failures in the tracking pipeline.
 
+#### Physical Setup
+The tracking setup consists of a Logitech 720p camera mounted on two MG996 servos, powered via a 5V supply connected to the Arduino. This configuration allows for future pan–tilt motion based on tracking feedback.
+
+<p align="center">
+  <img src="RedBallTrackerSetupImage.png" width="500"><br>
+  <em>Figure 4. Overall hardware setup showing camera and servos mounted with Arduino power connections.</em>
+</p>
+
+<p align="center">
+  <img src="CamerontwoMG996servos.PNG" width="500"><br>
+  <em>Figure 5. Close-up view of the camera mounted on dual MG996 servos.</em>
+</p>
+
 ---
 
 ### 2. Video Capture Initialization
 <p align="center">
   <img src="cam_frame_setup.png" width="500"><br>
-  <em>Figure 4. Camera frame configuration at 640×480 resolution.</em>
+  <em>Figure 6. Camera frame configuration at 640×480 resolution.</em>
 </p>
 
 The system initializes the default camera and sets the resolution to 640×480. This resolution offers a balance between processing efficiency and spatial detail. The frame center (320, 240) is precomputed to support future pan–tilt control mapping.
@@ -44,7 +57,7 @@ The system initializes the default camera and sets the resolution to 640×480. T
 <p align="center">
   <img src="hsv_cylinder.webp" width="300">
   <img src="HSVunwrapped.png" width="300"><br>
-  <em>Figure 5. HSV color representation: cylindrical model (left) and hue circle (right).</em>
+  <em>Figure 7. HSV color representation: cylindrical model (left) and hue circle (right).</em>
 </p>
 
 The detection algorithm relies on the HSV color model, which separates chromatic information from illumination. OpenCV maps hue to a 0–180 scale, causing red to appear at both ends of the spectrum. To accommodate this wraparound, two independent hue ranges are required.
@@ -54,7 +67,7 @@ The detection algorithm relies on the HSV color model, which separates chromatic
   <img src="red_lower_2.png" width="200">
   <img src="red_upper_1.png" width="200">
   <img src="red_upper_2.png" width="200"><br>
-  <em>Figure 6. HSV threshold visualization for red segmentation.</em>
+  <em>Figure 8. HSV threshold visualization for red segmentation.</em>
 </p>
 
 The system uses four threshold matrices:
@@ -66,7 +79,7 @@ The system uses four threshold matrices:
 
 <p align="center">
   <img src="hsv_threshold.png" width="500"><br>
-  <em>Figure 7. Real-time HSV threshold adjustment interface.</em>
+  <em>Figure 9. Real-time HSV threshold adjustment interface.</em>
 </p>
 
 The masks are combined using a bitwise OR operation and adjusted via a calibration interface, allowing adaptation to varying environments.
@@ -76,19 +89,19 @@ The masks are combined using a bitwise OR operation and adjusted via a calibrati
 ### 4. Morphological Filtering for Noise Reduction
 <p align="center">
   <img src="erode_dilate_filter.png" width="500"><br>
-  <em>Figure 8. Erosion and dilation operations for mask refinement.</em>
+  <em>Figure 10. Erosion and dilation operations for mask refinement.</em>
 </p>
 
 Morphological filtering is applied to reduce noise and improve the stability of red object extraction. The effects of these operations can be seen clearly in the following test captures taken during live calibration with the red ball:
 
 <p align="center">
   <img src="before_erodedilate.png" width="500"><br>
-  <em>Figure 9. Raw binary mask before applying erosion and dilation. Small noise clusters and irregular edges are visible.</em>
+  <em>Figure 11. Raw binary mask before applying erosion and dilation. Small noise clusters and irregular edges are visible.</em>
 </p>
 
 <p align="center">
   <img src="after_erodedilate.png" width="500"><br>
-  <em>Figure 10. Binary mask after applying erosion and dilation. Noise is removed and the ball region becomes more uniform and structurally coherent.</em>
+  <em>Figure 12. Binary mask after applying erosion and dilation. Noise is removed and the ball region becomes more uniform and structurally coherent.</em>
 </p>
 
 These examples demonstrate the practical impact of morphological operations. Erosion removes isolated bright pixels and breaks apart thin connections, while dilation reconstructs the main object, ensuring that the red ball remains intact and easily detectable. Kernel size and iteration parameters can be tuned interactively through the calibration panel to suit different environments.
@@ -98,7 +111,7 @@ These examples demonstrate the practical impact of morphological operations. Ero
 ### 5. Contour Analysis and Object Selection
 <p align="center">
   <img src="contouring.png" width="500"><br>
-  <em>Figure 11. Contour detection and largest-region selection.</em>
+  <em>Figure 13. Contour detection and largest-region selection.</em>
 </p>
 
 Contours are extracted from the refined mask. A minimum area threshold of 300 pixels removes insignificant detections. The largest contour is selected as the primary target, assuming the red ball appears as the largest contiguous region. A minimum enclosing circle provides position and radius estimates.
@@ -108,15 +121,44 @@ Contours are extracted from the refined mask. A minimum area threshold of 300 pi
 ### 6. Visualization and Calibration Interface
 Detection results are superimposed onto the camera feed, including the bounding circle, center point, and radius. A calibration panel provides controls for:
 
-- HSV thresholds (dual-range)
-- Morphological filtering strength
-- Gaussian blur settings
-- Minimum detection area
+- HSV thresholds (dual-range)  
+- Morphological filtering strength  
+- Gaussian blur settings  
+- Minimum detection area  
 
-Keyboard commands:
+Keyboard commands:  
 - **r** — reset values  
 - **s** — save configuration  
 - **q** — quit  
+
+---
+
+### 7. PID Control Integration
+
+To enable automated pan–tilt tracking, PID control is implemented for servo motion. The chosen PID parameters are:
+
+- **P:** 0.25  
+- **I:** 0.5  
+- **D:** 0.025  
+
+<p align="center">
+  <img src="PIDvaluesincode.png" width="500"><br>
+  <em>Figure 14. PID values defined in code.</em>
+</p>
+
+<p align="center">
+  <img src="PIDlabel.png" width="500"><br>
+  <em>Figure 15. Visual representation of PID labels in the calibration interface.</em>
+</p>
+
+These PID values are applied to compute servo adjustments according to the following calculation scheme:
+
+<p align="center">
+  <img src="PIDcalculationsincode.png" width="500"><br>
+  <em>Figure 16. Implementation of PID calculation in the code for pan–tilt control.</em>
+</p>
+
+This control logic ensures smooth tracking of the red ball while minimizing overshoot and oscillation.
 
 ---
 
@@ -130,7 +172,8 @@ Keyboard commands:
 5. Morphological filtering to reduce noise  
 6. Contour extraction and filtering  
 7. Minimum enclosing circle fitting  
-8. Annotated visualization with calibration controls  
+8. PID-based servo control for pan–tilt tracking  
+9. Annotated visualization with calibration controls  
 
 ### Color Space Rationale
 HSV decouples color from illumination, producing more stable red detection than RGB. The dual-range method ensures complete spectral coverage across the 0/180 hue wraparound, enabling robust performance under varied lighting.
@@ -158,6 +201,15 @@ HSV decouples color from illumination, producing more stable red detection than 
 - Complete documentation for instructional use  
 
 ---
+
+## Demonstration
+
+A live demonstration of the red ball tracking system in action is available on YouTube:  
+
+[![Red Ball Tracking Demo](https://img.youtube.com/vi/hAKxDOjYczM/0.jpg)](https://www.youtube.com/watch?v=hAKxDOjYczM)  
+*Click the image to view the video.*  
+
+This video showcases the system’s real-time detection, HSV segmentation, morphological filtering, and PID-controlled pan–tilt tracking in a live setup.
 
 ## Requirements
 - Python 3.7+  
